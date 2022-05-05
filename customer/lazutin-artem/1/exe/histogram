@@ -7,26 +7,39 @@ from PIL import Image, ImageTk
 class App:
 	def __init__(self):
 		self.Root = Tk.Tk()
-		self.Root.bind("l", self.loadNew)
-
-		self.Frame = Tk.Frame(self.Root)
-		self.Frame.grid()
-		self.loadNew()
+		self.Root.bind("l", self.loadNewImage)
+		self.loadNewImage()
 
 	def Start(self):
 		self.Root.mainloop()
 
-	def loadNew(self, *args):
+	def onCanvasMouseMotion(self, *args):
+		self.Root.title(str(args))
+
+	def loadNewImage(self, *args):
 		path = fd.askopenfilename()
 		self.Image = Image.open(path)
 
-		self.Canvas = Tk.Canvas(self.Root, width=self.Image.size[0], height=self.Image.size[1])
-		print(self.Image.size[0], self.Image.size[1])
+		self.Canvas = Tk.Canvas(
+			self.Root,
+			width=self.Image.size[0],
+			height=self.Image.size[1]
+		)
 
 		self.Photo = ImageTk.PhotoImage(self.Image)
 		self.CanvasImage = self.Canvas.create_image(0, 0, anchor="nw", image=self.Photo)
 		self.Canvas.place(relx=0.5, rely=0.5, anchor=Tk.CENTER)
 
+		self.Canvas.bind("<Motion>", self.onCanvasMouseMotion)
+
+class Histogram:
+	def __init__(self, app):
+		self.Master = app.Root
+		self.Root = Tk.Toplevel(self.Master)
+		self.Root.geometry("200x200")
+
+
 app = App()
 app.Start()
+hist = Histogram(app)
 
