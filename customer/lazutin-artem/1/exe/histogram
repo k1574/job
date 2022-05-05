@@ -1,17 +1,32 @@
 #!/usr/bin/env python3
 
-import tkinter as tk
+import tkinter.filedialog as fd
+import tkinter as Tk
 from PIL import Image, ImageTk
 
-root = tk.Tk()
+class App:
+	def __init__(self):
+		self.Root = Tk.Tk()
+		self.Root.bind("l", self.loadNew)
 
-frame = tk.Frame(root)
-frame.grid()
+		self.Frame = Tk.Frame(self.Root)
+		self.Frame.grid()
+		self.loadNew()
 
-canvas = tk.Canvas(root, height=480, width=720)
-img = Image.open("1.jpg")
-photo = ImageTk.PhotoImage(img)
-img = canvas.create_image(0, 0, anchor="nw", image=photo)
-canvas.grid(row=1, column=1)
+	def Start(self):
+		self.Root.mainloop()
 
-root.mainloop()
+	def loadNew(self, *args):
+		path = fd.askopenfilename()
+		self.Image = Image.open(path)
+
+		self.Canvas = Tk.Canvas(self.Root, width=self.Image.size[0], height=self.Image.size[1])
+		print(self.Image.size[0], self.Image.size[1])
+
+		self.Photo = ImageTk.PhotoImage(self.Image)
+		self.CanvasImage = self.Canvas.create_image(0, 0, anchor="nw", image=self.Photo)
+		self.Canvas.place(relx=0.5, rely=0.5, anchor=Tk.CENTER)
+
+app = App()
+app.Start()
+
