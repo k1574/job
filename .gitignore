@@ -1,1 +1,6 @@
-.~lock*
+*.o
+.~*
+*.zip
+exe/
+log
+*lab*

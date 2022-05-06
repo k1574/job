@@ -1,0 +1,4 @@
+<$MKINCDIR/config
+PROGNAME = lab1
+CFILES = main.c
+

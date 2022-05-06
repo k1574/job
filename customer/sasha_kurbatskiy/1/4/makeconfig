@@ -1,0 +1,4 @@
+PROGNAME = lab4
+OFILES = main.o
+LDFLAGS = -lm
+

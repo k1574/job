@@ -1,0 +1,3 @@
+PROGNAME = lab2
+OFILES = main.o
+

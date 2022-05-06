@@ -1,0 +1,4 @@
+PROGNAME = lab3
+LDFLAGS = -lm
+OFILES = main.o
+

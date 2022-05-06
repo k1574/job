@@ -1,0 +1,14 @@
+.PHONY: clean
+
+TARG = ${PROGNAME}
+CC = cc
+LD = ${CC}
+
+${TARG} : ${OFILES}
+	${LD} -o ${TARG} ${LDFLAGS} ${OFILES}
+
+.c.o :
+	${CC} -c -o $@ ${CFLAGS} $<
+
+clean:
+	rm -f ${OFILES} ${TARG}

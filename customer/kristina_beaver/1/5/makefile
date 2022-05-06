@@ -1,0 +1,2 @@
+include makeconfig
+include ../stdmake
