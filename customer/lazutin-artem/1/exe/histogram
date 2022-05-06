@@ -1,24 +1,81 @@
 #!/usr/bin/env python3
 
+import copy
 import tkinter.filedialog as fd
 import tkinter as Tk
 from PIL import Image, ImageTk
 
+
 class App:
+	CursorBorderWidth = 5
 	def __init__(self):
 		self.Root = Tk.Tk()
 		self.Root.bind("l", self.loadNewImage)
+
+		# Define main variables.
+		self.Image = None
+		self.Photo = None
+		self.RGB = None
+		self.Canvas = None
+
 		self.loadNewImage()
 
 	def Start(self):
 		self.Root.mainloop()
 
-	def onCanvasMouseMotion(self, *args):
-		self.Root.title(str(args))
+	def DrawCursorBorder(self, ev):
+		cw = self.CursorBorderWidth
+		self.Canvas.create_line(
+			ev.x-cw,
+			ev.y-cw,
+			ev.x+cw,
+			ev.y-cw,
+			tag="top"
+		)
+
+		self.Canvas.create_line(
+			ev.x-cw,
+			ev.y-cw,
+			ev.x-cw,
+			ev.y+cw,
+			tag="left"
+		)
+
+		self.Canvas.create_line(
+			ev.x+cw,
+			ev.y-cw,
+			ev.x+cw,
+			ev.y+cw,
+			tag="right"
+		)
+
+		self.Canvas.create_line(
+			ev.x - cw,
+			ev.y + cw,
+			ev.x + cw,
+			ev.y + cw,
+			tag="bottom"
+		)
+
+	def onCanvasMouseMotion(self, ev):
+		px = self.RGB.getpixel((ev.x, ev.y))
+		self.Root.title(
+			"x:%d y:%d #%x%x%x Intensity:%d%%" \
+				% (
+					ev.x, ev.y,
+					px[0], px[1], px[2],
+					int((px[0]+px[1]+px[2])/3/256 * 100)
+			)
+		)
+		for i in ["top", "left", "right", "bottom"] :
+			self.Canvas.delete(i)
+		self.DrawCursorBorder(ev)
+
 
 	def loadNewImage(self, *args):
 		path = fd.askopenfilename()
 		self.Image = Image.open(path)
+		self.RGB = self.Image.convert("RGB")
 
 		self.Canvas = Tk.Canvas(
 			self.Root,
