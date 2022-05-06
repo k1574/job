@@ -5,12 +5,25 @@ import tkinter.filedialog as fd
 import tkinter as Tk
 from PIL import Image, ImageTk
 
+RED = 0
+GREEN = 1
+BLUE = 2
 
 class App:
 	CursorBorderWidth = 5
+	IntensifyVal = 5
+	ModKey = "<Control-%s>"
 	def __init__(self):
 		self.Root = Tk.Tk()
-		self.Root.bind("l", self.loadNewImage)
+		self.Root.bind("n", self.loadNewImage)
+		self.Root.bind("r", lambda a: self.intensifyColor([RED], self.IntensifyVal))
+		self.Root.bind(self.ModKey % "r", lambda a: self.intensifyColor([RED], -self.IntensifyVal))
+		self.Root.bind("g", lambda a: self.intensifyColor([GREEN], self.IntensifyVal))
+		self.Root.bind(self.ModKey % "g", lambda a: self.intensifyColor([GREEN], -self.IntensifyVal))
+		self.Root.bind("b", lambda a: self.intensifyColor([BLUE], self.IntensifyVal))
+		self.Root.bind(self.ModKey % "b", lambda a: self.intensifyColor([BLUE], -self.IntensifyVal))
+		self.Root.bind("l", lambda a: self.intensifyColor([RED, GREEN, BLUE], self.IntensifyVal))
+		self.Root.bind(self.ModKey % "l", lambda a: self.intensifyColor([RED, GREEN, BLUE], -self.IntensifyVal))
 
 		# Define main variables.
 		self.Image = None
@@ -23,7 +36,15 @@ class App:
 	def Start(self):
 		self.Root.mainloop()
 
-	def DrawCursorBorder(self, ev):
+	def intensifyColor(self, colors, val):
+		print("yes")
+		s = list(self.Image.split())
+		for c in colors :
+			s[c] = s[c].point(lambda i: i + val)
+		self.Image = Image.merge("RGB", tuple(s))
+		self.updateImage(self.Image)
+
+	def drawCursorBorder(self, ev):
 		cw = self.CursorBorderWidth
 		self.Canvas.create_line(
 			ev.x-cw,
@@ -58,7 +79,7 @@ class App:
 		)
 
 	def onCanvasMouseMotion(self, ev):
-		px = self.RGB.getpixel((ev.x, ev.y))
+		px = self.Image.getpixel((ev.x, ev.y))
 		self.Root.title(
 			"x:%d y:%d #%x%x%x Intensity:%d%%" \
 				% (
@@ -69,13 +90,17 @@ class App:
 		)
 		for i in ["top", "left", "right", "bottom"] :
 			self.Canvas.delete(i)
-		self.DrawCursorBorder(ev)
+		self.drawCursorBorder(ev)
 
+
+	def updateImage(self, img):
+		self.Photo = ImageTk.PhotoImage(img)
+		self.CanvasImage = self.Canvas.create_image(0, 0, anchor="nw", image=self.Photo)
 
 	def loadNewImage(self, *args):
 		path = fd.askopenfilename()
-		self.Image = Image.open(path)
-		self.RGB = self.Image.convert("RGB")
+		self.Image = Image.open(path).convert("RGB")
+		# self.RGB = self.Image.convert("RGB")
 
 		self.Canvas = Tk.Canvas(
 			self.Root,
@@ -83,8 +108,7 @@ class App:
 			height=self.Image.size[1]
 		)
 
-		self.Photo = ImageTk.PhotoImage(self.Image)
-		self.CanvasImage = self.Canvas.create_image(0, 0, anchor="nw", image=self.Photo)
+		self.updateImage(self.Image)
 		self.Canvas.place(relx=0.5, rely=0.5, anchor=Tk.CENTER)
 
 		self.Canvas.bind("<Motion>", self.onCanvasMouseMotion)
