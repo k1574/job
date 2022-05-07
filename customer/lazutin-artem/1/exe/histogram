@@ -5,11 +5,21 @@ import tkinter.filedialog as fd
 import tkinter as Tk
 from PIL import Image, ImageTk
 
-RED = 0
-GREEN = 1
-BLUE = 2
-COLORS = [RED, GREEN, BLUE]
-MAXVAL = 255
+class RGB:
+	RED = 0
+	GREEN = 1
+	BLUE = 2
+	COLORS = [RED, GREEN, BLUE]
+	LUMS = [0.3, 0.59, 0.11]
+	MAXVAL = 255
+
+	def Lum(px):
+		v = 0
+		i = 0
+		for l in LUMS :
+			v += px[i] * l
+			i += 1
+		return v
 
 class App:
 	CursorBorderWidth = 5
@@ -18,15 +28,24 @@ class App:
 	def __init__(self):
 		self.Root = Tk.Tk()
 		self.Root.bind("n", self.loadNewImage)
-		self.Root.bind(self.ModKey % "n", lambda a: self.negativeColor())
-		self.Root.bind("r", lambda a: self.intensifyColor([RED], self.IntensifyVal))
-		self.Root.bind(self.ModKey % "r", lambda a: self.intensifyColor([RED], -self.IntensifyVal))
-		self.Root.bind("g", lambda a: self.intensifyColor([GREEN], self.IntensifyVal))
-		self.Root.bind(self.ModKey % "g", lambda a: self.intensifyColor([GREEN], -self.IntensifyVal))
-		self.Root.bind("b", lambda a: self.intensifyColor([BLUE], self.IntensifyVal))
-		self.Root.bind(self.ModKey % "b", lambda a: self.intensifyColor([BLUE], -self.IntensifyVal))
-		self.Root.bind("l", lambda a: self.intensifyColor(COLORS, self.IntensifyVal))
-		self.Root.bind(self.ModKey % "l", lambda a: self.intensifyColor(COLORS, -self.IntensifyVal))
+		self.Root.bind(self.ModKey % "n",
+			lambda a: self.negativeColor())
+		self.Root.bind("r",
+			lambda a: self.intensifyColor([RGB.RED], self.IntensifyVal))
+		self.Root.bind(self.ModKey % "r",
+			lambda a: self.intensifyColor([RGB.RED], -self.IntensifyVal))
+		self.Root.bind("g",
+			lambda a: self.intensifyColor([RGB.GREEN], self.IntensifyVal))
+		self.Root.bind(self.ModKey % "g",
+			lambda a: self.intensifyColor([RGB.GREEN], -self.IntensifyVal))
+		self.Root.bind("b",
+			lambda a: self.intensifyColor([RGB.BLUE], self.IntensifyVal))
+		self.Root.bind(self.ModKey % "b",
+			lambda a: self.intensifyColor([RGB.BLUE], -self.IntensifyVal))
+		self.Root.bind("l",
+			lambda a: self.intensifyColor(RGB.COLORS, self.IntensifyVal))
+		self.Root.bind(self.ModKey % "l",
+			lambda a: self.intensifyColor(RGB.COLORS, -self.IntensifyVal))
 
 		# Define main variables.
 		self.Image = None
@@ -47,10 +66,9 @@ class App:
 		self.updateImage(self.Image)
 
 	def negativeColor(self):
-		print("yes")
 		s = list(self.Image.split())
-		for c in COLORS :
-			s[c] = s[c].point(lambda v: MAXVAL - v)
+		for c in RGB.COLORS :
+			s[c] = s[c].point(lambda v: RGB.MAXVAL - v)
 		self.Image = Image.merge("RGB", tuple(s))
 		self.updateImage(self.Image)
 
