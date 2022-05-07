@@ -9,6 +9,7 @@ class RGB:
 	RED = 0
 	GREEN = 1
 	BLUE = 2
+	LUM = 3
 	COLORS = [RED, GREEN, BLUE]
 	LUMS = [0.3, 0.59, 0.11]
 	MAXVAL = 255
@@ -22,9 +23,11 @@ class RGB:
 		return v
 
 class App:
+	FirstTime = True
 	CursorBorderWidth = 5
 	IntensifyVal = 5
 	ModKey = "<Control-%s>"
+	HistoHeight = 100
 	def __init__(self):
 		self.Root = Tk.Tk()
 		self.Root.bind("n", self.loadNewImage)
@@ -147,13 +150,22 @@ class App:
 		for i in ["top", "left", "right", "bottom"] :
 			self.Canvas.delete(i)
 		self.drawCursorBorder(ev)
-
+	def buildHistos(self):
+		for canv in RGB.COLORS :
+			self.buildHisto(canv)
+	def buildHisto(self, histo):
+		pass
 
 	def updateImage(self, img):
 		self.Photo = ImageTk.PhotoImage(img)
-		self.CanvasImage = self.Canvas.create_image(0, 0, anchor="nw", image=self.Photo)
+		self.CanvasImage = \
+			self.Canvas.create_image(0, 0, anchor="nw", image=self.Photo)
 
 	def loadNewImage(self, *args):
+		if not self.FirstTime :
+			self.Canvas.pack_forget()
+			for v in self.HistoCanvases :
+				v.pack_forget()
 		path = fd.askopenfilename()
 		self.Image = Image.open(path).convert("RGB")
 		# self.RGB = self.Image.convert("RGB")
@@ -163,20 +175,23 @@ class App:
 			width=self.Image.size[0],
 			height=self.Image.size[1]
 		)
+			
+		self.Canvas.pack()
+
+		# Creating histogram canvases.
+		canv = lambda: Tk.Canvas(width=RGB.MAXVAL+1, height=self.HistoHeight)
+		self.HistoCanvases = []
+		for i in range(len(RGB.COLORS + [RGB.LUM])) :
+			c = canv()
+			self.HistoCanvases.append(c)
+			c.pack()
+			c.create_line(0, 0, 50, 50)
 
 		self.updateImage(self.Image)
-		self.Canvas.place(relx=0.5, rely=0.5, anchor=Tk.CENTER)
-
 		self.Canvas.bind("<Motion>", self.onCanvasMouseMotion)
-
-class Histogram:
-	def __init__(self, app):
-		self.Master = app.Root
-		self.Root = Tk.Toplevel(self.Master)
-		self.Root.geometry("200x200")
-
+		if self.FirstTime :
+			self.FirstTime = False
 
 app = App()
 app.Start()
-hist = Histogram(app)
 
