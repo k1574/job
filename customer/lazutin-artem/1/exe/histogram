@@ -46,6 +46,8 @@ class App:
 			lambda a: self.intensifyColor(RGB.COLORS, self.IntensifyVal))
 		self.Root.bind(self.ModKey % "l",
 			lambda a: self.intensifyColor(RGB.COLORS, -self.IntensifyVal))
+		self.Root.bind("h", lambda a: self.mirrorH())
+		self.Root.bind("v", lambda a: self.mirrorV())
 
 		# Define main variables.
 		self.Image = None
@@ -70,6 +72,32 @@ class App:
 		for c in RGB.COLORS :
 			s[c] = s[c].point(lambda v: RGB.MAXVAL - v)
 		self.Image = Image.merge("RGB", tuple(s))
+		self.updateImage(self.Image)
+
+	def mirrorH(self):
+		im = Image.new(mode="RGB", size=self.Image.size)
+		w, h = self.Image.size
+		for i in range(h) :
+			for j in range(w) :
+				im.putpixel(
+					(j, i),
+					self.Image.getpixel((w-j-1, i))
+				)
+		self.Image = im
+		self.updateImage(self.Image)
+
+	def mirrorV(self):
+		im = Image.new(mode="RGB", size=self.Image.size)
+		w, h = self.Image.size
+		for i in range(w) :
+			for j in range(h) :
+				im.putpixel(
+					(i, j),
+					self.Image.getpixel(
+						(i, h-j-1)
+					)
+				)
+		self.Image = im
 		self.updateImage(self.Image)
 
 	def drawCursorBorder(self, ev):
