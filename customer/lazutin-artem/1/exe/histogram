@@ -8,6 +8,8 @@ from PIL import Image, ImageTk
 RED = 0
 GREEN = 1
 BLUE = 2
+COLORS = [RED, GREEN, BLUE]
+MAXVAL = 255
 
 class App:
 	CursorBorderWidth = 5
@@ -16,14 +18,15 @@ class App:
 	def __init__(self):
 		self.Root = Tk.Tk()
 		self.Root.bind("n", self.loadNewImage)
+		self.Root.bind(self.ModKey % "n", lambda a: self.negativeColor())
 		self.Root.bind("r", lambda a: self.intensifyColor([RED], self.IntensifyVal))
 		self.Root.bind(self.ModKey % "r", lambda a: self.intensifyColor([RED], -self.IntensifyVal))
 		self.Root.bind("g", lambda a: self.intensifyColor([GREEN], self.IntensifyVal))
 		self.Root.bind(self.ModKey % "g", lambda a: self.intensifyColor([GREEN], -self.IntensifyVal))
 		self.Root.bind("b", lambda a: self.intensifyColor([BLUE], self.IntensifyVal))
 		self.Root.bind(self.ModKey % "b", lambda a: self.intensifyColor([BLUE], -self.IntensifyVal))
-		self.Root.bind("l", lambda a: self.intensifyColor([RED, GREEN, BLUE], self.IntensifyVal))
-		self.Root.bind(self.ModKey % "l", lambda a: self.intensifyColor([RED, GREEN, BLUE], -self.IntensifyVal))
+		self.Root.bind("l", lambda a: self.intensifyColor(COLORS, self.IntensifyVal))
+		self.Root.bind(self.ModKey % "l", lambda a: self.intensifyColor(COLORS, -self.IntensifyVal))
 
 		# Define main variables.
 		self.Image = None
@@ -37,10 +40,17 @@ class App:
 		self.Root.mainloop()
 
 	def intensifyColor(self, colors, val):
-		print("yes")
 		s = list(self.Image.split())
 		for c in colors :
 			s[c] = s[c].point(lambda i: i + val)
+		self.Image = Image.merge("RGB", tuple(s))
+		self.updateImage(self.Image)
+
+	def negativeColor(self):
+		print("yes")
+		s = list(self.Image.split())
+		for c in COLORS :
+			s[c] = s[c].point(lambda v: MAXVAL - v)
 		self.Image = Image.merge("RGB", tuple(s))
 		self.updateImage(self.Image)
 
