@@ -5,29 +5,40 @@ import tkinter.filedialog as fd
 import tkinter as Tk
 from PIL import Image, ImageTk
 
-class RGB:
-	RED = 0
-	GREEN = 1
-	BLUE = 2
-	LUM = 3
-	COLORS = [RED, GREEN, BLUE]
-	LUMS = [0.3, 0.59, 0.11]
-	MAXVAL = 255
+class Rgb:
+	def __init__(self):
+		self.RED = 0
+		self.GREEN = 1
+		self.BLUE = 2
+		self.LUM = 3
+		self.COLORS = [self.RED, self.GREEN, self.BLUE]
+		self.LUMS = [0.3, 0.59, 0.11]
+		self.MAXVAL = 255
+		self.FNLIST = [self.R, self.G, self.B, self.L]
 
-	def Lum(px):
+	def R(self, px):
+		return px[self.RED]
+	def G(self, px):
+		return px[self.GREEN]
+	def B(self, px):
+		return px[self.BLUE]
+
+	def L(self, px):
 		v = 0
 		i = 0
-		for l in LUMS :
+		for l in self.LUMS :
 			v += px[i] * l
 			i += 1
-		return v
+		return int(v)
 
+RGB = Rgb()
 class App:
 	FirstTime = True
 	CursorBorderWidth = 5
 	IntensifyVal = 5
 	ModKey = "<Control-%s>"
 	HistoHeight = 100
+	HistoWidth = RGB.MAXVAL+1
 	def __init__(self):
 		self.Root = Tk.Tk()
 		self.Root.bind("n", self.loadNewImage)
@@ -151,15 +162,36 @@ class App:
 			self.Canvas.delete(i)
 		self.drawCursorBorder(ev)
 	def buildHistos(self):
-		for canv in RGB.COLORS :
-			self.buildHisto(canv)
-	def buildHisto(self, histo):
-		pass
+		for canvIdx in RGB.COLORS + [RGB.LUM] :
+			self.buildHisto(canvIdx)
+	def buildHisto(self, canvIdx):
+		# Height array.
+		canv = self.HistoCanvases[canvIdx]
+		img = self.Image
+		w, h = self.HistoWidth, self.HistoHeight
+		# Empty array.
+		ha = [0 for i in range(w) ]
 
+		# Pixels.
+		clrs = img.getcolors(
+			img.size[0]*img.size[1]
+		)
+
+		# Filling array with heights up.
+		for n, c in clrs :
+			idx = RGB.FNLIST[canvIdx](c)
+			ha[idx] += n
+
+		maxx = float(max(ha))
+		canv.delete("all")
+		for i in range(w) :
+			canv.create_line((i, h-1), (i, int(h-ha[i]/maxx*h)))
+		
 	def updateImage(self, img):
 		self.Photo = ImageTk.PhotoImage(img)
 		self.CanvasImage = \
 			self.Canvas.create_image(0, 0, anchor="nw", image=self.Photo)
+		self.buildHistos()
 
 	def loadNewImage(self, *args):
 		if not self.FirstTime :
@@ -179,13 +211,15 @@ class App:
 		self.Canvas.pack()
 
 		# Creating histogram canvases.
-		canv = lambda: Tk.Canvas(width=RGB.MAXVAL+1, height=self.HistoHeight)
+		canv = lambda: Tk.Canvas(
+			width=self.HistoWidth,
+			height=self.HistoHeight
+		)
 		self.HistoCanvases = []
 		for i in range(len(RGB.COLORS + [RGB.LUM])) :
 			c = canv()
 			self.HistoCanvases.append(c)
 			c.pack()
-			c.create_line(0, 0, 50, 50)
 
 		self.updateImage(self.Image)
 		self.Canvas.bind("<Motion>", self.onCanvasMouseMotion)
