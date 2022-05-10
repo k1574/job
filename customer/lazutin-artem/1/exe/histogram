@@ -121,50 +121,37 @@ class App:
 
 	def drawCursorBorder(self, ev):
 		cw = self.CursorBorderWidth
-		self.Canvas.create_line(
-			ev.x-cw,
-			ev.y-cw,
-			ev.x+cw,
-			ev.y-cw,
-			tag="top"
-		)
-
-		self.Canvas.create_line(
-			ev.x-cw,
-			ev.y-cw,
-			ev.x-cw,
-			ev.y+cw,
-			tag="left"
-		)
-
-		self.Canvas.create_line(
-			ev.x+cw,
-			ev.y-cw,
-			ev.x+cw,
-			ev.y+cw,
-			tag="right"
-		)
-
-		self.Canvas.create_line(
+		self.Canvas.create_rectangle(
 			ev.x - cw,
-			ev.y + cw,
+			ev.y - cw,
 			ev.x + cw,
 			ev.y + cw,
-			tag="bottom"
+			tag="cursor"
+		)
+		self.Canvas.create_rectangle(
+			ev.x - cw - 1,
+			ev.y - cw - 1,
+			ev.x + cw + 1,
+			ev.y + cw + 1,
+			outline="white",
+			tag="cursor"
 		)
 
 	def onCanvasMouseMotion(self, ev):
-		px = self.Image.getpixel((ev.x, ev.y))
+		px = (0, 0, 0)
+		try:
+			px = self.Image.getpixel((ev.x, ev.y))
+		except IndexError:
+			pass
 		self.Root.title(
-			"x:%d y:%d #%x%x%x Intensity:%d%%" \
+			"x:%d y:%d #%02x%02x%02x Intensity:%d%%" \
 				% (
 					ev.x, ev.y,
 					px[0], px[1], px[2],
 					int((px[0]+px[1]+px[2])/3/256 * 100)
 			)
 		)
-		for i in ["top", "left", "right", "bottom"] :
-			self.Canvas.delete(i)
+		self.Canvas.delete("cursor")
 		self.drawCursorBorder(ev)
 	def buildHistos(self):
 		for canvIdx in RGB.COLORS + [RGB.LUM] :
