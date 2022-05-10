@@ -67,6 +67,12 @@ class App:
 		)
 		self.Root.bind("h", lambda a: self.mirrorH())
 		self.Root.bind("v", lambda a: self.mirrorV())
+		self.Root.bind("1", lambda a: self.exchangeColorChannels([RGB.RED, RGB.GREEN]))
+		self.Root.bind("2", lambda a: self.exchangeColorChannels([RGB.RED, RGB.BLUE]))
+		self.Root.bind("3", lambda a: self.exchangeColorChannels([RGB.GREEN, RGB.RED]))
+		self.Root.bind("4", lambda a: self.exchangeColorChannels([RGB.GREEN, RGB.BLUE]))
+		self.Root.bind("5", lambda a: self.exchangeColorChannels([RGB.BLUE, RGB.RED]))
+		self.Root.bind("6", lambda a: self.exchangeColorChannels([RGB.BLUE, RGB.GREEN]))
 
 		# Define main variables.
 		self.Image = None
@@ -78,6 +84,13 @@ class App:
 
 	def Start(self):
 		self.Root.mainloop()
+
+	def exchangeColorChannels(self, chans):
+		s = list(self.Image.split())
+		c1, c2 = chans[0], chans[1]
+		s[c1], s[c2] = s[c2], s[c1]
+		self.Image = Image.merge("RGB", tuple(s))
+		self.updateImage(self.Image)
 
 	def intensifyColor(self, colors, val):
 		s = list(self.Image.split())
