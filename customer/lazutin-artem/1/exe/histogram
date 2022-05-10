@@ -36,6 +36,7 @@ class App:
 	FirstTime = True
 	CursorBorderWidth = 5
 	IntensifyVal = 5
+	ContrastVal = 5
 	ModKey = "<Control-%s>"
 	HistoHeight = 100
 	HistoWidth = RGB.MAXVAL+1
@@ -60,6 +61,10 @@ class App:
 			lambda a: self.intensifyColor(RGB.COLORS, self.IntensifyVal))
 		self.Root.bind(self.ModKey % "l",
 			lambda a: self.intensifyColor(RGB.COLORS, -self.IntensifyVal))
+		self.Root.bind("c", lambda a: self.changeContrast(self.ContrastVal))
+		self.Root.bind(self.ModKey % "c",
+			lambda a: self.changeContrast(-self.ContrastVal)
+		)
 		self.Root.bind("h", lambda a: self.mirrorH())
 		self.Root.bind("v", lambda a: self.mirrorV())
 
@@ -192,6 +197,20 @@ class App:
 		self.CanvasImage = \
 			self.Canvas.create_image(0, 0, anchor="nw", image=self.Photo)
 		self.buildHistos()
+			
+	def changeContrast(self, level):
+		img = self.Image
+		mv2 = (RGB.MAXVAL+1)/2
+		mv = RGB.MAXVAL
+		p = 4
+		factor = ((mv+p) * (level + mv)) \
+			/ (mv * (mv + p - level))
+		def contrast(c):
+			value = mv2 + factor * (c - mv2)
+			return int(max(0, min(255, value)))
+		img = img.point(contrast)
+		self.Image = img
+		self.updateImage(self.Image)
 
 	def loadNewImage(self, *args):
 		if not self.FirstTime :
