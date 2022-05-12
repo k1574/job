@@ -30,6 +30,22 @@ class Rgb:
 			v += px[i] * l
 			i += 1
 		return int(v)
+	def getRect(self, im, c, w, h):
+		l = []
+		for i in range(c[1], c[1]+h) :
+			for j in range(c[0], c[0]+w):
+				l.append(im.getpixel((j, i)))
+		return l
+	def pxMean(self, pxs):
+		ret = [0, 0, 0]
+		for px in pxs :
+			for i in range(3) :
+				ret[i] += px[i]
+		for i in range(3) :
+			ret[i] /= len(pxs)
+		for i in range(3) :
+			ret[i] = int(ret[i])
+		return tuple(ret)
 
 RGB = Rgb()
 class App:
@@ -73,6 +89,7 @@ class App:
 		self.Root.bind("4", lambda a: self.exchangeColorChannels([RGB.GREEN, RGB.BLUE]))
 		self.Root.bind("5", lambda a: self.exchangeColorChannels([RGB.BLUE, RGB.RED]))
 		self.Root.bind("6", lambda a: self.exchangeColorChannels([RGB.BLUE, RGB.GREEN]))
+		self.Root.bind("d", lambda a: self.blur())
 
 		# Define main variables.
 		self.Image = None
@@ -84,6 +101,29 @@ class App:
 
 	def Start(self):
 		self.Root.mainloop()
+
+	def blur(self):
+		im = Image.new(mode="RGB", size=self.Image.size)
+		sim = self.Image
+		w, h = im.size[0], im.size[1]
+		for i in range(h-2) :
+			i += 1
+			for j in range(w-2) :
+				j += 1
+				rect = RGB.getRect(sim, (j-1, i-1), 3, 3)
+				im.putpixel((j, i), RGB.pxMean(rect))
+		for i in range(w):
+			c1 = (i, 0)
+			c2 = (i, h-1)
+			im.putpixel(c1, sim.getpixel(c1))
+			im.putpixel(c2, sim.getpixel(c2))
+		for i in range(h):
+			c1 = (0, i)
+			c2 = (w-1, i)
+			im.putpixel(c1, sim.getpixel(c1))
+			im.putpixel(c2, sim.getpixel(c2))
+		self.Image = im
+		self.updateImage(im)
 
 	def exchangeColorChannels(self, chans):
 		s = list(self.Image.split())
