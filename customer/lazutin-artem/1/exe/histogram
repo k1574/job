@@ -197,11 +197,17 @@ class App:
 		except IndexError:
 			pass
 		self.Root.title(
-			"x:%d y:%d #%02x%02x%02x Intensity:%d%%" \
+			"x:%d y:%d #%02x%02x%02x Intensity:%d%% #%02x%02x%02x  #%02x%02x%02x" \
 				% (
 					ev.x, ev.y,
 					px[0], px[1], px[2],
-					int((px[0]+px[1]+px[2])/3/256 * 100)
+					int((px[0]+px[1]+px[2])/3/256 * 100),
+					px[0]-self.pxMean[0],
+					px[1]-self.pxMean[1],
+					px[2]-self.pxMean[2],
+					(px[0]-self.pxMean[0]) - self.difMean[0],
+					(px[1]-self.pxMean[1]) - self.difMean[1],
+					(px[2]-self.pxMean[2]) - self.difMean[2]
 			)
 		)
 		self.Canvas.delete("cursor")
@@ -236,6 +242,17 @@ class App:
 		self.Photo = ImageTk.PhotoImage(img)
 		self.CanvasImage = \
 			self.Canvas.create_image(0, 0, anchor="nw", image=self.Photo)
+		rect = RGB.getRect(img, (0, 0), img.size[0], img.size[1])
+		self.pxMean = RGB.pxMean(rect)
+		dif = [0, 0, 0]
+		for v in rect :
+			for i in range(3) :
+				dif[i] += (v[i] - self.pxMean[i])**2
+		for i in range(3) :
+			dif[i] /= len(rect)
+			dif[i] **= 0.5
+			dif[i] = int(dif[i])
+		self.difMean = dif
 		self.buildHistos()
 			
 	def changeContrast(self, level):
