@@ -1,3 +1,4 @@
+#include <locale.h>
 #include <stdlib.h>
 #include <stdio.h>
 #include <ctype.h>
@@ -7,14 +8,19 @@
 #define LENGTH(x) (sizeof(x) / sizeof(x[0]))
 
 void quit(void);
+void print(void);
 void input(void);
-void add(void);
+int add(void);
 void localRemove(void);
 void change(void);
 void sort(void);
-void digitSort(void);
+void numSort(void);
 void save(void);
 void restore(void);
+
+char *chomp(char *s, char c);
+
+LinkedList *db;
 
 LinkedList *
 ll_create(void)
@@ -107,12 +113,12 @@ ll_insert(LinkedList *l, unsigned int n, void *data)
 }
 
 struct Computer {
-	char *Manufacture, CPUType;
+	char Manufacture[26], CPUType[26];
 	float ClockFreq;
 	int Memory, HDDCapacity;
 };
 
-typedef struct PC PC;
+typedef struct Computer Computer;
 
 /* Handler to make the program extendable. */
 typedef void (*HndlFunc)(void);
@@ -126,24 +132,82 @@ typedef struct HndlFuncStruct HndlFuncStruct;
 /* Handlers themselves. */
 HndlFuncStruct handlers[] = {
 	{quit, "Quit"},
+	{print, "Print"},
 	{input, "Input"},
 	{add, "Add"},
 	{localRemove, "Remove"},
 	{change, "Change"},
 	{sort, "Sort"},
-	{digitSort, "Digital sort"},
+	{numSort, "Digital sort"},
 	{save, "Save"},
 	{restore, "Restore"},
 };
 
 void
-input()
+printComputer(Computer *c)
 {
+	printf(
+		"Manufacture: %s\n"
+		"CPU type: %s\n" 
+		"Clock frequency: %f\n"
+		"Memory: %d\n"
+		"HDD capacity: %d\n",
+		c->Manufacture, c->CPUType,
+		c->ClockFreq, c->Memory, c->HDDCapacity
+	);
 }
 
 void
+print()
+{
+	int i;
+	for(i=0 ; i<db->len ; ++i){
+		puts("");
+		printComputer((Computer *)ll_at(db, i));
+	}
+	puts("");
+}
+
+void
+input()
+{
+	while(!add())
+		;
+}
+
+char *
+readString(char *prompt, char *buf, int siz)
+{
+	printf("%s", prompt);
+	return chomp(fgets(buf, siz, stdin), '\n') ;
+}
+
+
+int
 add()
 {
+	char buf[512];
+
+	Computer *c = malloc(sizeof(*c)) ;
+
+	readString("Manufacture: ", c->Manufacture, sizeof(c->Manufacture));
+	if(!strcmp(c->Manufacture, "*")){
+		return 1 ;
+	}
+
+	readString("CPU type: ", c->CPUType, sizeof(c->CPUType));
+
+	c->ClockFreq =
+		atof(readString("Clock frequency: ", buf, sizeof(buf))) ;
+
+	c->Memory =
+		atoi(readString("Memory: ", buf, sizeof(buf))) ;
+
+	c->HDDCapacity =
+		atoi(readString("HDD capacity: ", buf, sizeof(buf))) ;
+
+	ll_push(db, c);
+	return 0 ;
 }
 
 void
@@ -162,7 +226,7 @@ sort()
 }
 
 void
-digitSort()
+numSort()
 {
 }
 
@@ -194,6 +258,7 @@ void
 printHndls(void)
 {
 	int i;
+	puts("");
 	for(i = 0 ; i<LENGTH(handlers) ; ++i){
 		printf("%d. %s\n", i, handlers[i].Desc);
 	}
@@ -212,12 +277,13 @@ hasNotDigits(char *s)
 	return 0 ;
 }
 
-void
+char *
 chomp(char *s, char c)
 {
 	int len = strlen(s) ;
-	if(s[len-1] == '\n')
+	if(s[len-1] == c)
 		s[len-1] = 0 ;
+	return s ;
 }
 
 void
@@ -227,6 +293,7 @@ mainLoop(void)
 	char buf[512];
 	while(1){
 		printHndls();
+		printf("> ");
 		if(!fgets(buf, sizeof(buf), stdin))
 			quit();
 		chomp(buf, '\n');
@@ -236,6 +303,7 @@ mainLoop(void)
 			continue;
 		}
 		in = atoi(buf) ;
+
 		if(ckIn(in)){
 			puts("No such function");
 			continue;
@@ -247,6 +315,7 @@ mainLoop(void)
 int 
 main(int argc, char *argv[])
 {
+	db = ll_create() ;
 	mainLoop();
 }
 
