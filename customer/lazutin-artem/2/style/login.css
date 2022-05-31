@@ -1,0 +1,48 @@
+/* By j for t. */
+
+body {
+	display : flex ;
+	flex-direction : column ;
+	justify-content : center ;
+	align-items : center ;
+	width : 100vw ;
+	height : 100vh ;
+}
+
+.login {
+	background-color : white ;
+	border-radius : 1rem ;
+	padding : 1rem ;
+	width : 30rem ;
+}
+
+.login *:not(:first-child) {
+	margin-top : 0.5rem ;
+}
+
+.login h1 {
+	text-align : center ;
+}
+
+.login .label {
+	display : block ;
+}
+
+.login .email , .login .password {
+	background-color : #f1faee ;
+	border-radius : 0.25rem ;
+	border : none ;
+	height : 1.75rem ;
+	width : 95% ;
+}
+
+.login .submit {
+	display : block ;
+	margin-right : auto ;
+	margin-left : auto ;
+	width : 10rem ; 
+	height : 2rem ; 
+	border-radius : 0.75rem;
+	background-color : #08549a ;
+	color : white ;
+}
