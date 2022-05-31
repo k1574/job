@@ -3,6 +3,7 @@
 import copy
 import tkinter.filedialog as fd
 import tkinter as Tk
+import numpy as np
 from PIL import Image, ImageTk
 
 class Rgb:
@@ -82,6 +83,9 @@ class App:
 			lambda a: self.changeContrast(-self.ContrastVal)
 		)
 		self.Root.bind("h", lambda a: self.mirrorH())
+		self.Root.bind(self.ModKey % "h",
+			lambda a : self.highpassFilter()
+		)
 		self.Root.bind("v", lambda a: self.mirrorV())
 		self.Root.bind("1", lambda a: self.exchangeColorChannels([RGB.RED, RGB.GREEN]))
 		self.Root.bind("2", lambda a: self.exchangeColorChannels([RGB.RED, RGB.BLUE]))
@@ -103,6 +107,10 @@ class App:
 		self.Root.mainloop()
 
 	def blur(self):
+		self.Image = self.blurRet()
+		self.updateImage(self.Image)
+
+	def blurRet(self):
 		im = Image.new(mode="RGB", size=self.Image.size)
 		sim = self.Image
 		w, h = im.size[0], im.size[1]
@@ -122,8 +130,7 @@ class App:
 			c2 = (w-1, i)
 			im.putpixel(c1, sim.getpixel(c1))
 			im.putpixel(c2, sim.getpixel(c2))
-		self.Image = im
-		self.updateImage(im)
+		return im
 
 	def exchangeColorChannels(self, chans):
 		s = list(self.Image.split())
@@ -170,6 +177,13 @@ class App:
 					)
 				)
 		self.Image = im
+		self.updateImage(self.Image)
+
+	def highpassFilter(self):
+		blur = self.blurRet()
+		b1, b2 = np.asarray(self.Image), np.asarray(blur)
+		dif = b1 - b2
+		self.Image = Image.fromarray(dif)
 		self.updateImage(self.Image)
 
 	def drawCursorBorder(self, ev):
