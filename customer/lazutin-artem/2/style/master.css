@@ -1,0 +1,12 @@
+/* Made by J for T. */
+
+body {
+	margin : 0 ;
+	background-color : #f1faee ;
+	display : flex ;
+	flex-direction : column ;
+	justify-content : center ;
+	align-items : center ;
+	width : 100% ;
+}
+
