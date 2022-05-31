@@ -1,0 +1,93 @@
+/* By J for T. */
+
+body {
+	display : flex ;
+	flex-wrap : wrap ;
+	flex-direction : row ;
+	/*justify-content : space-around ;*/
+	align-items : flex-start ;
+	gap : 1.25rem;
+}
+
+.menu {
+}
+
+.menu .option:first-child {
+	border-top-left-radius : 1rem ;
+	border-top-right-radius : 1rem ;
+}
+
+.menu .option:not(:first-child) {
+	margin-top : 0.25rem ;
+}
+
+.menu .option {
+	background-color : white ;
+	list-style-type : none ;
+	padding : 0.5rem ;
+}
+
+.menu .option:last-child {
+	border-bottom-left-radius : 1rem ;
+	border-bottom-right-radius : 1rem ;
+}
+
+.main {
+	display : flex ;
+	flex-direction : column ;
+	gap : 1rem ;
+}
+
+.main .user {
+	display : flex ;
+	flex-direction : row ;
+	background-color : white ;
+	max-height : 10rem ;
+	padding : 1rem ;
+	border-radius : 0.5rem ;
+}
+
+.main .user .logo {
+	max-height : 100% ;
+	max-width : 25% ;
+	border-radius : 50% ;
+}
+
+.main .user .profile .info .email {
+	color : #47bcd4 ;
+	text-decoration : none ;
+}
+
+.main .user .profile {
+	margin-left : 1rem ;
+	display : flex ;
+	flex-direction : column ;
+	justify-content : space-between ;
+}
+
+.main .user .profile .change * {
+	display : block ;
+}
+
+.main .ideas .holder:not(:first-child) {
+	margin-top : 2rem ;
+}
+
+.main .ideas .holder .idea:first-child {
+	border-top-left-radius : 1rem ;
+	border-top-right-radius : 1rem ;
+}
+
+.main .ideas .holder .idea:not(:first-child) {
+	margin-top : .5rem ;
+}
+
+.main .ideas .holder .idea {
+	background : white ;
+	padding : 0.5rem;
+}
+
+.main .ideas .holder .idea:last-child {
+	border-bottom-left-radius : 1rem ;
+	border-bottom-right-radius : 1rem ;
+}
