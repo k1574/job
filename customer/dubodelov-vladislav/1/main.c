@@ -272,8 +272,8 @@ add()
 	return 1 ;
 }
 
-void
-localRemove()
+int
+readIndex()
 {
     int i;
     char buf[512] = "0";
@@ -284,14 +284,23 @@ localRemove()
         	puts("Wrong index");
 	        continue;
         }
-    }while(hasNotDigits(buf));
+    }while(hasNotDigits(buf) || i < 0 || db->len <= i);
     
+    return i ;
+}
+
+void
+localRemove()
+{
+    int i = readIndex();
     ll_remove(db, i);
 }
 
 void
 change()
 {
+	int i = readIndex() ;
+    readComputer(ll_at(db, i));
 }
 
 void
