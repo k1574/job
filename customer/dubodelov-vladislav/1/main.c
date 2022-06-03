@@ -3,6 +3,7 @@
 #include <stdio.h>
 #include <ctype.h>
 #include <string.h>
+#include <math.h>
 #include "defs.h"
 
 #define LENGTH(x) (sizeof(x) / sizeof(x[0]))
@@ -109,6 +110,58 @@ ll_insert(LinkedList *l, unsigned int n, void *data)
 	el->next->next = buf ;
 
 	++l->len;
+	return 0 ;
+}
+
+int
+ll_swap(LinkedList *l, unsigned int i1, unsigned int i2)
+{
+	int i;
+	int min;
+	LinkedListEl *el,
+		*el1, *el2,
+		*els1, *els2,
+		*elss1, *elss2;
+
+	if(i1 == i2)
+		return 0 ;
+
+	if(i1 >= l->len || i2 >= l->len )
+		return 1 ;
+
+
+	el1 = l->first ;
+	for(i=0 ; i<i1 ; ++i)
+		el1 = el1->next ;
+
+	el2 = l->first ;
+	for(i=0 ; i<i2 ; ++i)
+		el2 = el2->next ;
+
+	els1 = el1->next ;
+	els2 = el2->next ;
+
+	elss1 = els1 ? els1->next : 0 ;
+	elss2 = els2 ? els2->next : 0 ;
+
+	if(abs(i1-i2) == 1){
+		if(i1<i2){
+			el1->next = els2 ;
+			els2->next = els1 ;
+			els1->next = elss2 ;
+		} else {
+			el2->next = els1 ;
+			els1->next = els2 ;
+			els2->next = elss1 ;
+		}
+	} else {
+		el1->next = els2 ;
+		el2->next = els1 ;
+
+		els1->next = elss2 ;
+		els2->next = elss1 ;
+	}
+
 	return 0 ;
 }
 
