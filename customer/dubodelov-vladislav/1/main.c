@@ -275,6 +275,18 @@ add()
 void
 localRemove()
 {
+    int i;
+    char buf[512] = "0";
+    
+    do{
+        i = atoi(readString("Enter index: ", buf, sizeof(buf))) ;
+        if(i < 0 || db->len <= i){
+        	puts("Wrong index");
+	        continue;
+        }
+    }while(hasNotDigits(buf));
+    
+    ll_remove(db, i);
 }
 
 void
