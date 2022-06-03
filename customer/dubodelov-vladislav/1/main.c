@@ -284,13 +284,43 @@ numSort()
 }
 
 void
-save()
+save(void)
 {
+	int i;
+	char buf[512];
+	FILE *f = fopen(readString("File name: ", buf, sizeof(buf)), "w+b") ;
+	if(!f){
+		perror("fopen");
+		return;
+	}
+
+	for(i=0 ; i<db->len ; ++i)
+		fwrite(ll_at(db, i), sizeof(Computer), 1, f);
+	fclose(f);
 }
 
 void
 restore()
 {
+	int i, n;
+	char buf[512];
+	FILE *f = fopen(readString("File name: ", buf, sizeof(buf)), "r+b") ;
+	if(!f){
+		perror("fopen");
+		return;
+	}
+
+	do{
+		Computer *c = malloc(sizeof(*c)) ;
+		n = fread(c, sizeof(*c), 1, f);
+		if(n != 1){
+			free(c);
+		}else{
+			ll_append(db, c);
+		}
+	}while(!feof(f));
+
+	fclose(f);
 }
 
 void
@@ -311,7 +341,6 @@ void
 printHndls(void)
 {
 	int i;
-	puts("");
 	for(i = 0 ; i<LENGTH(handlers) ; ++i){
 		printf("%d. %s\n", i, handlers[i].Desc);
 	}
