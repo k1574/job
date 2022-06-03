@@ -224,7 +224,7 @@ print()
 void
 input()
 {
-	while(!add())
+	while(add())
 		;
 }
 
@@ -235,17 +235,12 @@ readString(char *prompt, char *buf, int siz)
 	return chomp(fgets(buf, siz, stdin), '\n') ;
 }
 
-
-int
-add()
-{
+Computer *
+readComputer(Computer *c){
 	char buf[512];
-
-	Computer *c = malloc(sizeof(*c)) ;
-
 	readString("Manufacture: ", c->Manufacture, sizeof(c->Manufacture));
 	if(!strcmp(c->Manufacture, "*")){
-		return 1 ;
+		return 0 ;
 	}
 
 	readString("CPU type: ", c->CPUType, sizeof(c->CPUType));
@@ -259,8 +254,22 @@ add()
 	c->HDDCapacity =
 		atoi(readString("HDD capacity: ", buf, sizeof(buf))) ;
 
+
+	return c ;
+}
+
+
+int
+add()
+{
+	Computer *c = malloc(sizeof(*c)) ;
+	if(!readComputer(c)){
+	   return 0 ;
+	}
+	
 	ll_push(db, c);
-	return 0 ;
+
+	return 1 ;
 }
 
 void
