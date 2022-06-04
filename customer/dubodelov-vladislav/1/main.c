@@ -8,7 +8,6 @@
 
 #define LENGTH(x) (sizeof(x) / sizeof(x[0]))
 
-
 struct Computer {
 	char Manufacture[26], CPUType[26];
 	float ClockFreq;
@@ -40,7 +39,12 @@ int restore(void);
 void printSorts(void);
 int hasNotDigits(char *s);
 
+int byNothing(void *, void *);
 int byClockFreq(void *, void *);
+int byMemory(void *, void *);
+int byCPUType(void *, void *);
+int byHDDCapacity(void *, void *);
+int byManufacture(void *, void *);
 
 char *chomp(char *s, char c);
 
@@ -63,9 +67,12 @@ struct {
 	int (*Fn)(void *, void *);
 	char *Desc;
 } sorts[] = {
-	/*{byManufacture, "By manufacture"},
-	{byCPUType, "By CPU type"},*/
+    {byNothing, "Exit"},
+	{byManufacture, "By manufacture"},
+	{byCPUType, "By CPU type"},
 	{byClockFreq, "By clock frequency"},
+	{byMemory, "By memory"},
+	{byHDDCapacity, "By HDD capacity"},
 };
 
 LinkedList *
@@ -224,12 +231,50 @@ ll_bubbleSort(LinkedList *l, int (*fn)(void *, void *))
 }
 
 int
+byNothing(void *v1, void *v2)
+{
+    return 0 ;
+}
+
+int
 byClockFreq(void *v1, void *v2)
 {
 	Computer 
 		*c1 = (Computer *)v1 ,
 		*c2 = (Computer *)v2 ;
 	return (c1->ClockFreq >= c2->ClockFreq) ? 1 : -1 ;
+}
+
+int
+byMemory(void *v1, void *v2)
+{
+    Computer *c1 = (Computer *)v1,
+    	*c2 = (Computer *)v2 ;
+	return c1->Memory > c2->Memory ? 1 : -1 ;
+}
+
+int
+byManufacture(void *v1, void *v2)
+{
+    Computer *c1 = (Computer *)v1,
+    	*c2 = (Computer *)v2 ;
+	   return strcmp(c1->Manufacture, c2->Manufacture) ;
+}
+
+int
+byCPUType(void *v1, void *v2)
+{
+    Computer *c1 = (Computer *)v1,
+    	*c2 = (Computer *)v2 ;
+	   return strcmp(c1->CPUType, c2->CPUType) ;
+}
+
+int
+byHDDCapacity(void *v1, void *v2)
+{
+    Computer *c1 = (Computer *)v1,
+    	*c2 = (Computer *)v2 ;
+	return c1->HDDCapacity > c2->HDDCapacity ? 1 : -1 ;
 }
 
 void
