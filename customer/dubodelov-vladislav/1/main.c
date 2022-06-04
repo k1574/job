@@ -8,20 +8,65 @@
 
 #define LENGTH(x) (sizeof(x) / sizeof(x[0]))
 
-void quit(void);
-void print(void);
-void input(void);
+
+struct Computer {
+	char Manufacture[26], CPUType[26];
+	float ClockFreq;
+	int Memory, HDDCapacity;
+};
+
+typedef struct Computer Computer;
+
+/* Handler to make the program extendable. */
+typedef int (*HndlFunc)(void);
+
+struct HndlFuncStruct {
+	HndlFunc Hndl;
+	char *Desc;
+} ;
+typedef struct HndlFuncStruct HndlFuncStruct;
+
+int quit(void);
+int print(void);
+int input(void);
 int add(void);
-void localRemove(void);
-void change(void);
-void sort(void);
-void numSort(void);
-void save(void);
-void restore(void);
+int localRemove(void);
+int change(void);
+int sort(void);
+int numSort(void);
+int save(void);
+int restore(void);
+
+void printSorts(void);
+int hasNotDigits(char *s);
+
+int byClockFreq(void *, void *);
 
 char *chomp(char *s, char c);
 
 LinkedList *db;
+
+/* Handlers themselves. */
+HndlFuncStruct handlers[] = {
+	{quit, "Quit"},
+	{print, "Print"},
+	{input, "Input"},
+	{add, "Add"},
+	{localRemove, "Remove"},
+	{change, "Change"},
+	{sort, "Sort"},
+	{save, "Save"},
+	{restore, "Restore"},
+};
+
+struct {
+	int (*Fn)(void *, void *);
+	char *Desc;
+} sorts[] = {
+	/*{byManufacture, "By manufacture"},
+	{byCPUType, "By CPU type"},*/
+	{byClockFreq, "By clock frequency"},
+};
 
 LinkedList *
 ll_create(void)
@@ -165,36 +210,27 @@ ll_swap(LinkedList *l, unsigned int i1, unsigned int i2)
 	return 0 ;
 }
 
-struct Computer {
-	char Manufacture[26], CPUType[26];
-	float ClockFreq;
-	int Memory, HDDCapacity;
-};
+void
+ll_bubbleSort(LinkedList *l, int (*fn)(void *, void *))
+{
+	int i, j;
+	for(i=0 ; i<l->len - 1 ; ++i){
+		for(j=0 ; j<l->len - 1 - i ; ++j){
+			if(fn(ll_at(l, j), ll_at(l, j+1)) > 0){
+			   ll_swap(l, j, j+1);
+			}
+		}
+	}
+}
 
-typedef struct Computer Computer;
-
-/* Handler to make the program extendable. */
-typedef void (*HndlFunc)(void);
-
-struct HndlFuncStruct {
-	HndlFunc Hndl;
-	char *Desc;
-} ;
-typedef struct HndlFuncStruct HndlFuncStruct;
-
-/* Handlers themselves. */
-HndlFuncStruct handlers[] = {
-	{quit, "Quit"},
-	{print, "Print"},
-	{input, "Input"},
-	{add, "Add"},
-	{localRemove, "Remove"},
-	{change, "Change"},
-	{sort, "Sort"},
-	{numSort, "Digital sort"},
-	{save, "Save"},
-	{restore, "Restore"},
-};
+int
+byClockFreq(void *v1, void *v2)
+{
+	Computer 
+		*c1 = (Computer *)v1 ,
+		*c2 = (Computer *)v2 ;
+	return (c1->ClockFreq >= c2->ClockFreq) ? 1 : -1 ;
+}
 
 void
 printComputer(Computer *c)
@@ -210,7 +246,7 @@ printComputer(Computer *c)
 	);
 }
 
-void
+int
 print()
 {
 	int i;
@@ -219,13 +255,15 @@ print()
 		printComputer((Computer *)ll_at(db, i));
 	}
 	puts("");
+	return 0 ;
 }
 
-void
+int
 input()
 {
 	while(add())
 		;
+	return 0 ;
 }
 
 char *
@@ -275,45 +313,48 @@ add()
 int
 readIndex()
 {
-    int i;
-    char buf[512] = "0";
-    
-    do{
-        i = atoi(readString("Enter index: ", buf, sizeof(buf))) ;
-        if(i < 0 || db->len <= i){
-        	puts("Wrong index");
-	        continue;
-        }
-    }while(hasNotDigits(buf) || i < 0 || db->len <= i);
-    
-    return i ;
+	int i;
+	char buf[512] = "0";
+	
+	do{
+		i = atoi(readString("Enter index: ", buf, sizeof(buf))) ;
+		if(i < 0 || db->len <= i){
+			puts("Wrong index");
+			continue;
+		}
+	}while(hasNotDigits(buf) || i < 0 || db->len <= i);
+	
+	return i ;
 }
 
-void
+int
 localRemove()
 {
-    int i = readIndex();
-    ll_remove(db, i);
+	int i = readIndex();
+	ll_remove(db, i);
+	return 0 ;
 }
 
-void
+int
 change()
 {
 	int i = readIndex() ;
-    readComputer(ll_at(db, i));
+	readComputer(ll_at(db, i));
+	return 0 ;
 }
 
-void
+int
 sort()
 {
+	int in;
+	char buf[512];
+	printSorts();
+	in = atoi(readString("> ", buf, sizeof(buf))) ;
+	ll_bubbleSort(db, sorts[in].Fn);
+	return 0 ;
 }
 
-void
-numSort()
-{
-}
-
-void
+int
 save(void)
 {
 	int i;
@@ -321,15 +362,16 @@ save(void)
 	FILE *f = fopen(readString("File name: ", buf, sizeof(buf)), "w+b") ;
 	if(!f){
 		perror("fopen");
-		return;
+		return 1 ;
 	}
 
 	for(i=0 ; i<db->len ; ++i)
 		fwrite(ll_at(db, i), sizeof(Computer), 1, f);
 	fclose(f);
+	return 0 ;
 }
 
-void
+int
 restore()
 {
 	int i, n;
@@ -337,7 +379,7 @@ restore()
 	FILE *f = fopen(readString("File name: ", buf, sizeof(buf)), "r+b") ;
 	if(!f){
 		perror("fopen");
-		return;
+		return 1;
 	}
 
 	do{
@@ -351,9 +393,10 @@ restore()
 	}while(!feof(f));
 
 	fclose(f);
+	return 0 ;
 }
 
-void
+int
 quit(void)
 {
 	exit(0);
@@ -365,6 +408,15 @@ ckIn(int in)
 	if(in < 0 || in > LENGTH(handlers))
 		return 1 ;
 	return 0 ;
+}
+
+void
+printSorts(void)
+{
+	int i;
+	for(i = 0 ; i<LENGTH(sorts) ; ++i){
+		printf("%d. %s\n", i, sorts[i].Desc);
+	}
 }
 
 void
@@ -405,15 +457,7 @@ mainLoop(void)
 	char buf[512];
 	while(1){
 		printHndls();
-		printf("> ");
-		if(!fgets(buf, sizeof(buf), stdin))
-			quit();
-		chomp(buf, '\n');
-
-		if(hasNotDigits(buf)){
-			puts("Wrong input format");
-			continue;
-		}
+		readString("> ", buf, sizeof(buf));
 		in = atoi(buf) ;
 
 		if(ckIn(in)){
