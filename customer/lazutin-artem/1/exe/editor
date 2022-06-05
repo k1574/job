@@ -60,8 +60,16 @@ class App:
 		self.Root = Tk.Tk()
 		self.ConvolveCoreBox = Tk.Text(self.Root, height=1, width=50)
 		self.ConvolveCoreBox.pack()	
+		self.Add126Var = Tk.IntVar()
+		self.MeanValVar = Tk.IntVar()
+		self.Add126 = Tk.Checkbutton(text="Add 126", variable=self.Add126Var,
+			onvalue=126, offvalue=0)
+		self.Add126.pack()
+		self.MeanVal = Tk.Checkbutton(text="Mean", variable=self.MeanValVar,
+			onvalue=9, offvalue=1)
+		self.MeanVal.pack()
 
-		self.Root.bind("<Escape>", lambda a: self.focusScroll())
+		self.Root.bind("<Tab>", lambda a: self.focusScroll())
 
 		# Define main variables.
 		self.Image = None
@@ -155,6 +163,8 @@ class App:
 		self.updateImage(self.Image)
 
 	def convolve(self):
+		meanval = self.MeanValVar.get()
+		add256 = self.Add126Var.get()
 		core = self.ConvolveCoreBox.get("1.0", Tk.END).split(",")
 		core = [float(x) for x in core]
 		img = self.Image
@@ -166,6 +176,9 @@ class App:
 				for c in RGB.COLORS :
 					for idx in range(9) :
 						ret[c] += int(core[idx] * rect[idx][c])
+					ret[c] /= meanval
+					ret[c] += add256
+					ret[c] = int(ret[c])
 				im.putpixel((i, j), tuple(ret))
 
 		self.Image = im
@@ -269,7 +282,12 @@ class App:
 		self.updateImage(self.Image)
 
 	def focusScroll(self):
-		s = [self.Canvas, self.ConvolveCoreBox]
+		s = [
+			self.Canvas,
+			self.ConvolveCoreBox,
+			self.Add126,
+			self.MeanVal
+		]
 		set = s[self.CurScroll % len(s)]
 		set.grab_set()
 		set.focus_set()
