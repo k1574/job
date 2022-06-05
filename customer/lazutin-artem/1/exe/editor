@@ -1,6 +1,5 @@
 #!/usr/bin/env python3
 
-import copy
 import tkinter.filedialog as fd
 import tkinter as Tk
 import numpy as np
@@ -59,47 +58,17 @@ class App:
 	HistoWidth = RGB.MAXVAL+1
 	def __init__(self):
 		self.Root = Tk.Tk()
-		self.Root.bind("n", self.loadNewImage)
-		self.Root.bind(self.ModKey % "n",
-			lambda a: self.negativeColor())
-		self.Root.bind("r",
-			lambda a: self.intensifyColor([RGB.RED], self.IntensifyVal))
-		self.Root.bind(self.ModKey % "r",
-			lambda a: self.intensifyColor([RGB.RED], -self.IntensifyVal))
-		self.Root.bind("g",
-			lambda a: self.intensifyColor([RGB.GREEN], self.IntensifyVal))
-		self.Root.bind(self.ModKey % "g",
-			lambda a: self.intensifyColor([RGB.GREEN], -self.IntensifyVal))
-		self.Root.bind("b",
-			lambda a: self.intensifyColor([RGB.BLUE], self.IntensifyVal))
-		self.Root.bind(self.ModKey % "b",
-			lambda a: self.intensifyColor([RGB.BLUE], -self.IntensifyVal))
-		self.Root.bind("l",
-			lambda a: self.intensifyColor(RGB.COLORS, self.IntensifyVal))
-		self.Root.bind(self.ModKey % "l",
-			lambda a: self.intensifyColor(RGB.COLORS, -self.IntensifyVal))
-		self.Root.bind("c", lambda a: self.changeContrast(self.ContrastVal))
-		self.Root.bind(self.ModKey % "c",
-			lambda a: self.changeContrast(-self.ContrastVal)
-		)
-		self.Root.bind("h", lambda a: self.mirrorH())
-		self.Root.bind(self.ModKey % "h",
-			lambda a : self.highpassFilter()
-		)
-		self.Root.bind("v", lambda a: self.mirrorV())
-		self.Root.bind("1", lambda a: self.exchangeColorChannels([RGB.RED, RGB.GREEN]))
-		self.Root.bind("2", lambda a: self.exchangeColorChannels([RGB.RED, RGB.BLUE]))
-		self.Root.bind("3", lambda a: self.exchangeColorChannels([RGB.GREEN, RGB.RED]))
-		self.Root.bind("4", lambda a: self.exchangeColorChannels([RGB.GREEN, RGB.BLUE]))
-		self.Root.bind("5", lambda a: self.exchangeColorChannels([RGB.BLUE, RGB.RED]))
-		self.Root.bind("6", lambda a: self.exchangeColorChannels([RGB.BLUE, RGB.GREEN]))
-		self.Root.bind("d", lambda a: self.blur())
+		self.ConvolveCoreBox = Tk.Text(self.Root, height=1, width=50)
+		self.ConvolveCoreBox.pack()	
+
+		self.Root.bind("<Escape>", lambda a: self.focusScroll())
 
 		# Define main variables.
 		self.Image = None
 		self.Photo = None
 		self.RGB = None
 		self.Canvas = None
+		self.CurScroll = 0
 
 		self.loadNewImage()
 
@@ -133,7 +102,6 @@ class App:
 		return im
 
 	def exchangeColorChannels(self, chans):
-		s = list(self.Image.split())
 		c1, c2 = chans[0], chans[1]
 		s[c1], s[c2] = s[c2], s[c1]
 		self.Image = Image.merge("RGB", tuple(s))
@@ -185,6 +153,23 @@ class App:
 		dif = b1 - b2
 		self.Image = Image.fromarray(dif)
 		self.updateImage(self.Image)
+
+	def convolve(self):
+		core = self.ConvolveCoreBox.get("1.0", Tk.END).split(",")
+		core = [float(x) for x in core]
+		img = self.Image
+		im = Image.new(mode="RGB", size=self.Image.size)
+		for i in range(1, img.size[0]-1) :
+			for j in range(1, img.size[1]-1) :
+				rect = list(RGB.getRect(img, (i-1, j-1), 3, 3))
+				ret = [0, 0, 0]
+				for c in RGB.COLORS :
+					for idx in range(9) :
+						ret[c] += int(core[idx] * rect[idx][c])
+				im.putpixel((i, j), tuple(ret))
+
+		self.Image = im
+		self.updateImage(im)
 
 	def drawCursorBorder(self, ev):
 		cw = self.CursorBorderWidth
@@ -283,6 +268,12 @@ class App:
 		self.Image = img
 		self.updateImage(self.Image)
 
+	def focusScroll(self):
+		s = [self.Canvas, self.ConvolveCoreBox]
+		set = s[self.CurScroll % len(s)]
+		set.grab_set()
+		set.focus_set()
+		self.CurScroll += 1
 	def loadNewImage(self, *args):
 		if not self.FirstTime :
 			self.Canvas.pack_forget()
@@ -315,6 +306,46 @@ class App:
 		self.Canvas.bind("<Motion>", self.onCanvasMouseMotion)
 		if self.FirstTime :
 			self.FirstTime = False
+			
+		self.Canvas.bind("n", self.loadNewImage)
+		self.Canvas.bind(self.ModKey % "n",
+			lambda a: self.negativeColor())
+		self.Canvas.bind("r",
+			lambda a: self.intensifyColor([RGB.RED], self.IntensifyVal))
+		self.Canvas.bind(self.ModKey % "r",
+			lambda a: self.intensifyColor([RGB.RED], -self.IntensifyVal))
+		self.Canvas.bind("g",
+			lambda a: self.intensifyColor([RGB.GREEN], self.IntensifyVal))
+		self.Canvas.bind(self.ModKey % "g",
+			lambda a: self.intensifyColor([RGB.GREEN], -self.IntensifyVal))
+		self.Canvas.bind("b",
+			lambda a: self.intensifyColor([RGB.BLUE], self.IntensifyVal))
+		self.Canvas.bind(self.ModKey % "b",
+			lambda a: self.intensifyColor([RGB.BLUE], -self.IntensifyVal))
+		self.Canvas.bind("l",
+			lambda a: self.intensifyColor(RGB.COLORS, self.IntensifyVal))
+		self.Canvas.bind(self.ModKey % "l",
+			lambda a: self.intensifyColor(RGB.COLORS, -self.IntensifyVal))
+		self.Canvas.bind("c", lambda a: self.changeContrast(self.ContrastVal))
+		self.Canvas.bind(self.ModKey % "c",
+			lambda a: self.changeContrast(-self.ContrastVal)
+		)
+		
+		self.Canvas.bind("y", lambda a: self.convolve())
+		self.Canvas.bind("h", lambda a: self.mirrorH())
+		self.Canvas.bind(self.ModKey % "h",
+			lambda a : self.highpassFilter()
+		)
+		self.Canvas.bind("v", lambda a: self.mirrorV())
+		self.Canvas.bind("1", lambda a: self.exchangeColorChannels([RGB.RED, RGB.GREEN]))
+		self.Canvas.bind("2", lambda a: self.exchangeColorChannels([RGB.RED, RGB.BLUE]))
+		self.Canvas.bind("3", lambda a: self.exchangeColorChannels([RGB.GREEN, RGB.RED]))
+		self.Canvas.bind("4", lambda a: self.exchangeColorChannels([RGB.GREEN, RGB.BLUE]))
+		self.Canvas.bind("5", lambda a: self.exchangeColorChannels([RGB.BLUE, RGB.RED]))
+		self.Canvas.bind("6", lambda a: self.exchangeColorChannels([RGB.BLUE, RGB.GREEN]))
+		self.Canvas.bind("d", lambda a: self.blur())
+
+		self.Canvas.focus()
 
 app = App()
 app.Start()
