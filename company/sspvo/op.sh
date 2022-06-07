@@ -52,12 +52,16 @@ for name in $names ; do
 	if test ! -z $indir && test -d $indir ; then
 		outdir="$out/$name/$op"
 		echo "'$indir'" '>' "'$outdir'"
-		echo -n '>' ; read input
+		echo -n 'Copying?>' ; read input
 
 		if test -z $input ; then
 			mkdir -p $outdir
 			ls "$indir" | \
 				xargs -I replace-str cp -r -f $indir/replace-str $outdir
+			echo -n 'Sending?>' ; read input
+			if test -z $input ; then
+				echo su -c 'bash /var/www/sspvo.sh cron' - www-data
+			fi
 		fi
 
 	fi
