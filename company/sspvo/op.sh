@@ -60,7 +60,7 @@ for name in $names ; do
 				xargs -I replace-str cp -r -f $indir/replace-str $outdir
 			echo -n 'Sending?>' ; read input
 			if test -z $input ; then
-				echo su -c 'bash /var/www/sspvo.sh cron' - www-data
+				su -c 'bash /var/www/sspvo.sh cron' - www-data
 			fi
 		fi
 
