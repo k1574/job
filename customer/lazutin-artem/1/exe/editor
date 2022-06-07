@@ -163,6 +163,7 @@ class App:
 		self.updateImage(self.Image)
 
 	def convolve(self):
+		print("convolving")
 		meanval = self.MeanValVar.get()
 		add256 = self.Add126Var.get()
 		core = self.ConvolveCoreBox.get("1.0", Tk.END).split(",")
@@ -181,6 +182,19 @@ class App:
 					ret[c] = int(ret[c])
 				im.putpixel((i, j), tuple(ret))
 
+		sim = self.Image
+		w, h = im.size[0], im.size[1]		
+		for i in range(w):
+			c1 = (i, 0)
+			c2 = (i, h-1)
+			im.putpixel(c1, sim.getpixel(c1))
+			im.putpixel(c2, sim.getpixel(c2))
+		for i in range(h):
+			c1 = (0, i)
+			c2 = (w-1, i)
+			im.putpixel(c1, sim.getpixel(c1))
+			im.putpixel(c2, sim.getpixel(c2))
+		
 		self.Image = im
 		self.updateImage(im)
 
