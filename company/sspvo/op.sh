@@ -59,9 +59,12 @@ for name in $names ; do
 			ls "$indir" | \
 				xargs -I replace-str cp -r -f $indir/replace-str $outdir
 			echo -n 'Sending?>' ; read input
+			pwd=`pwd` 
 			if test -z $input ; then
-				su -c 'bash /var/www/sspvo.sh cron' - www-data
+				cd /var/www
+				bash ./sspvo.sh cron
 			fi
+			cd "$pwd"
 		fi
 
 	fi
