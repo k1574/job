@@ -2,19 +2,6 @@
 
 argv0=$0
 
-usage() {
-	echo "usage: $argv0 <routine> <in> <out>" 1>&2 
-	exit 1
-}
-
-if test -z $1 || test -z $2 || test -z $3 ; then
-	usage
-fi
-
-op=$1
-in=$2
-out=$3
-
 names="
 DirectionParamsValue
 OrgDirection
@@ -45,6 +32,30 @@ OrderAdmissionPackage
 EditApplicationStatusList
 ServiceApplicationNoticeList
 "
+
+usage() {
+	echo "usage: $argv0 <routine> <in> <out>" 1>&2 
+	exit 1
+}
+
+if test -z $1 ; then
+    usage
+fi
+
+if test $1 = -r ; then
+	shift
+	names=$( (for i in $names ; do echo $i; done) | tac )
+fi
+
+if test -z $1 || test -z $2 || test -z $3 ; then
+	usage
+fi
+
+op=$1
+in=$2
+out=$3
+
+
 
 for name in $names ; do
 	indirre='$in/*_$name'
