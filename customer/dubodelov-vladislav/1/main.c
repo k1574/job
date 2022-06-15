@@ -4,7 +4,6 @@
 #include <ctype.h>
 #include <string.h>
 #include <math.h>
-#include "defs.h"
 
 #define LENGTH(x) (sizeof(x) / sizeof(x[0]))
 
@@ -25,16 +24,38 @@ struct HndlFuncStruct {
 } ;
 typedef struct HndlFuncStruct HndlFuncStruct;
 
-int quit(void);
-int print(void);
-int input(void);
-int add(void);
-int localRemove(void);
-int change(void);
-int sort(void);
-int numSort(void);
-int save(void);
-int restore(void);
+struct LinkedList {
+	/* First element is always empty one. */
+	struct LinkedListElement *first;
+	unsigned int len;
+} ;
+
+typedef struct LinkedList LinkedList;
+
+struct LinkedListElement {
+	void *data;
+	struct LinkedListElement *next;
+};
+
+typedef struct LinkedListElement LinkedListEl;
+
+LinkedList *ll_create(void);
+void ll_append(LinkedList *l, void *data);
+void ll_push(LinkedList *l, void *data);
+void *ll_at(LinkedList *l, unsigned int n);
+int ll_insert(LinkedList *l, unsigned int n, void *data);
+int ll_remove(LinkedList *l, unsigned int n);
+int ll_swap(LinkedList *l, unsigned int i1, unsigned int i2);
+
+int f_quit(void);
+int f_print(void);
+int f_input(void);
+int f_add(void);
+int f_remove(void);
+int f_change(void);
+int f_sort(void);
+int f_save(void);
+int f_restore(void);
 
 void printSorts(void);
 int hasNotDigits(char *s);
@@ -50,19 +71,20 @@ char *chomp(char *s, char c);
 
 LinkedList *db;
 
-/* Handlers themselves. */
+/* Команды. */
 HndlFuncStruct handlers[] = {
-	{quit, "Quit"},
-	{print, "Print"},
-	{input, "Input"},
-	{add, "Add"},
-	{localRemove, "Remove"},
-	{change, "Change"},
-	{sort, "Sort"},
-	{save, "Save"},
-	{restore, "Restore"},
+	{f_quit, "Quit"},
+	{f_print, "Print"},
+	{f_input, "Input"},
+	{f_add, "Add"},
+	{f_remove, "Remove"},
+	{f_change, "Change"},
+	{f_sort, "Sort"},
+	{f_save, "Save"},
+	{f_restore, "Restore"},
 };
 
+/* Функции сортировки. */
 struct {
 	int (*Fn)(void *, void *);
 	char *Desc;
@@ -75,6 +97,7 @@ struct {
 	{byHDDCapacity, "By HDD capacity"},
 };
 
+/* Создание связаного списка. */
 LinkedList *
 ll_create(void)
 {
@@ -86,6 +109,7 @@ ll_create(void)
 	return l ;
 }
 
+/* Добавить в конец списка. */
 void
 ll_append(LinkedList *l, void *data)
 {
@@ -99,6 +123,7 @@ ll_append(LinkedList *l, void *data)
 	++l->len;
 }
 
+/* Добавить в начало списка. */
 void
 ll_push(LinkedList *l, void *data)
 {
@@ -109,6 +134,7 @@ ll_push(LinkedList *l, void *data)
 	++l->len;
 }
 
+/* Получение элемента списка по индексу. */
 void *
 ll_at(LinkedList *l, unsigned int n)
 {
@@ -124,6 +150,7 @@ ll_at(LinkedList *l, unsigned int n)
 	return el->data ;
 }
 
+/* Удаление элемента списка по индексу. */
 int
 ll_remove(LinkedList *l, unsigned int n)
 {
@@ -144,6 +171,7 @@ ll_remove(LinkedList *l, unsigned int n)
 	return 0 ;
 }
 
+/* Вставить элемент после элемента с указанным индексом. */
 int
 ll_insert(LinkedList *l, unsigned int n, void *data)
 {
@@ -165,6 +193,7 @@ ll_insert(LinkedList *l, unsigned int n, void *data)
 	return 0 ;
 }
 
+/* Поменять местами 2 элемента по их индексам. */
 int
 ll_swap(LinkedList *l, unsigned int i1, unsigned int i2)
 {
@@ -217,6 +246,7 @@ ll_swap(LinkedList *l, unsigned int i1, unsigned int i2)
 	return 0 ;
 }
 
+/* Сортировка пузырьком по произвольной переданной функции. */
 void
 ll_bubbleSort(LinkedList *l, int (*fn)(void *, void *))
 {
@@ -230,12 +260,14 @@ ll_bubbleSort(LinkedList *l, int (*fn)(void *, void *))
 	}
 }
 
+/* Не сортировать. */
 int
 byNothing(void *v1, void *v2)
 {
     return 0 ;
 }
 
+/* Сортировать по частоте. */
 int
 byClockFreq(void *v1, void *v2)
 {
@@ -245,6 +277,7 @@ byClockFreq(void *v1, void *v2)
 	return (c1->ClockFreq >= c2->ClockFreq) ? 1 : -1 ;
 }
 
+/* Сортировать по памяти. */
 int
 byMemory(void *v1, void *v2)
 {
@@ -253,6 +286,7 @@ byMemory(void *v1, void *v2)
 	return c1->Memory > c2->Memory ? 1 : -1 ;
 }
 
+/* Сортировать по производителю. */
 int
 byManufacture(void *v1, void *v2)
 {
@@ -261,6 +295,7 @@ byManufacture(void *v1, void *v2)
 	   return strcmp(c1->Manufacture, c2->Manufacture) ;
 }
 
+/* Сортировать по типу ЦПУ. */
 int
 byCPUType(void *v1, void *v2)
 {
@@ -269,6 +304,7 @@ byCPUType(void *v1, void *v2)
 	   return strcmp(c1->CPUType, c2->CPUType) ;
 }
 
+/* Сортировать по вместимости жёсткого диска. */
 int
 byHDDCapacity(void *v1, void *v2)
 {
@@ -277,6 +313,7 @@ byHDDCapacity(void *v1, void *v2)
 	return c1->HDDCapacity > c2->HDDCapacity ? 1 : -1 ;
 }
 
+/* Вывести в терминал данные о компьютере.  */
 void
 printComputer(Computer *c)
 {
@@ -292,7 +329,7 @@ printComputer(Computer *c)
 }
 
 int
-print()
+f_print()
 {
 	int i;
 	for(i=0 ; i<db->len ; ++i){
@@ -304,13 +341,14 @@ print()
 }
 
 int
-input()
+f_input()
 {
-	while(add())
+	while(f_add())
 		;
 	return 0 ;
 }
 
+/* Прочитать строку из стандартного ввода без символа новой строки. */
 char *
 readString(char *prompt, char *buf, int siz)
 {
@@ -343,7 +381,7 @@ readComputer(Computer *c){
 
 
 int
-add()
+f_add()
 {
 	Computer *c = malloc(sizeof(*c)) ;
 	if(!readComputer(c)){
@@ -356,40 +394,40 @@ add()
 }
 
 int
-readIndex()
+readIndex(int i1, int i2)
 {
 	int i;
 	char buf[512] = "0";
 	
 	do{
 		i = atoi(readString("Enter index: ", buf, sizeof(buf))) ;
-		if(i < 0 || db->len <= i){
+		if(i < i1 || i2 <= i){
 			puts("Wrong index");
 			continue;
 		}
-	}while(hasNotDigits(buf) || i < 0 || db->len <= i);
+	}while(hasNotDigits(buf) || i < i1 || i2 <= i);
 	
 	return i ;
 }
 
 int
-localRemove()
+f_remove()
 {
-	int i = readIndex();
+	int i = readIndex(0, db->len);
 	ll_remove(db, i);
 	return 0 ;
 }
 
 int
-change()
+f_change()
 {
-	int i = readIndex() ;
+	int i = readIndex(0, db->len) ;
 	readComputer(ll_at(db, i));
 	return 0 ;
 }
 
 int
-sort()
+f_sort()
 {
 	int in;
 	char buf[512];
@@ -400,7 +438,7 @@ sort()
 }
 
 int
-save(void)
+f_save(void)
 {
 	int i;
 	char buf[512];
@@ -417,7 +455,7 @@ save(void)
 }
 
 int
-restore()
+f_restore()
 {
 	int i, n;
 	char buf[512];
@@ -442,19 +480,12 @@ restore()
 }
 
 int
-quit(void)
+f_quit(void)
 {
 	exit(0);
 }
 
-int
-ckIn(int in)
-{
-	if(in < 0 || in > LENGTH(handlers))
-		return 1 ;
-	return 0 ;
-}
-
+/* Напечатать список сортировок. */
 void
 printSorts(void)
 {
@@ -464,6 +495,7 @@ printSorts(void)
 	}
 }
 
+/* Напечатать команды. */
 void
 printHndls(void)
 {
@@ -473,6 +505,7 @@ printHndls(void)
 	}
 }
 
+/* Строка имеет в себе не цифру. */
 int
 hasNotDigits(char *s)
 {
@@ -486,6 +519,7 @@ hasNotDigits(char *s)
 	return 0 ;
 }
 
+/* Обнулить последний символ в строке. */
 char *
 chomp(char *s, char c)
 {
@@ -495,28 +529,21 @@ chomp(char *s, char c)
 	return s ;
 }
 
-void
-mainLoop(void)
+int 
+main(int argc, char *argv[])
 {
+	db = ll_create() ;
 	int in, ret;
 	char buf[512];
 	while(1){
 		printHndls();
 		readString("> ", buf, sizeof(buf));
 		in = atoi(buf) ;
-
-		if(ckIn(in)){
+		if(in < 0 || in > LENGTH(handlers)){
 			puts("No such function");
 			continue;
 		}
 		handlers[in].Hndl();
 	}
-}
-
-int 
-main(int argc, char *argv[])
-{
-	db = ll_create() ;
-	mainLoop();
 }
 
