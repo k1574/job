@@ -1,0 +1,12 @@
+# Tunnel creation
+ssh -L 3389:85.142.157.110:3389 \
+	-i nngu.a.parhomenko.key a.parhomenko@vuzportal.ru
+
+# Connecting with RDP
+
+xfreerdp /u:Abiturient /v:localhost:3389
+
+## Password for RDP
+
+Priemka237
+
