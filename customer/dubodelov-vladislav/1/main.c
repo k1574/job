@@ -62,10 +62,15 @@ int hasNotDigits(char *s);
 
 int byNothing(void *, void *);
 int byClockFreq(void *, void *);
+int byClockFreqRev(void *, void *);
 int byMemory(void *, void *);
+int byMemoryRev(void *, void *);
 int byCPUType(void *, void *);
+int byCPUTypeRev(void *, void *);
 int byHDDCapacity(void *, void *);
+int byHDDCapacityRev(void *, void *);
 int byManufacture(void *, void *);
+int byManufactureRev(void *, void *);
 
 char *chomp(char *s, char c);
 
@@ -91,10 +96,15 @@ struct {
 } sorts[] = {
     {byNothing, "Exit"},
 	{byManufacture, "By manufacture"},
+	{byManufactureRev, "By manufacture (reverse)"},
 	{byCPUType, "By CPU type"},
+	{byCPUTypeRev, "By CPU type (reverse)"},
 	{byClockFreq, "By clock frequency"},
+	{byClockFreqRev, "By clock frequency (reverse)"},
 	{byMemory, "By memory"},
+	{byMemoryRev, "By memory (reverse)"},
 	{byHDDCapacity, "By HDD capacity"},
+	{byHDDCapacityRev, "By HDD capacity (reverse)"},
 };
 
 /* Создание связаного списка. */
@@ -197,12 +207,10 @@ ll_insert(LinkedList *l, unsigned int n, void *data)
 int
 ll_swap(LinkedList *l, unsigned int i1, unsigned int i2)
 {
-	int i;
-	int min;
-	LinkedListEl *el,
-		*el1, *el2,
-		*els1, *els2,
-		*elss1, *elss2;
+        int i;
+
+	LinkedListEl *el1, *el2;
+	void *v;
 
 	if(i1 == i2)
 		return 0 ;
@@ -212,36 +220,16 @@ ll_swap(LinkedList *l, unsigned int i1, unsigned int i2)
 
 
 	el1 = l->first ;
-	for(i=0 ; i<i1 ; ++i)
+	for(i=0 ; i<=i1 ; ++i)
 		el1 = el1->next ;
 
 	el2 = l->first ;
-	for(i=0 ; i<i2 ; ++i)
+	for(i=0 ; i<=i2 ; ++i)
 		el2 = el2->next ;
 
-	els1 = el1->next ;
-	els2 = el2->next ;
-
-	elss1 = els1 ? els1->next : 0 ;
-	elss2 = els2 ? els2->next : 0 ;
-
-	if(abs(i1-i2) == 1){
-		if(i1<i2){
-			el1->next = els2 ;
-			els2->next = els1 ;
-			els1->next = elss2 ;
-		} else {
-			el2->next = els1 ;
-			els1->next = els2 ;
-			els2->next = elss1 ;
-		}
-	} else {
-		el1->next = els2 ;
-		el2->next = els1 ;
-
-		els1->next = elss2 ;
-		els2->next = elss1 ;
-	}
+	v = el1->data ;
+	el1->data = el2->data ;
+	el2->data = v ;
 
 	return 0 ;
 }
@@ -277,6 +265,15 @@ byClockFreq(void *v1, void *v2)
 	return (c1->ClockFreq >= c2->ClockFreq) ? 1 : -1 ;
 }
 
+int
+byClockFreqRev(void *v1, void *v2)
+{
+	Computer 
+		*c1 = (Computer *)v1 ,
+		*c2 = (Computer *)v2 ;
+	return (c1->ClockFreq <= c2->ClockFreq) ? 1 : -1 ;
+}
+
 /* Сортировать по памяти. */
 int
 byMemory(void *v1, void *v2)
@@ -284,6 +281,14 @@ byMemory(void *v1, void *v2)
     Computer *c1 = (Computer *)v1,
     	*c2 = (Computer *)v2 ;
 	return c1->Memory > c2->Memory ? 1 : -1 ;
+}
+
+int
+byMemoryRev(void *v1, void *v2)
+{
+    Computer *c1 = (Computer *)v1,
+    	*c2 = (Computer *)v2 ;
+	return c1->Memory < c2->Memory ? 1 : -1 ;
 }
 
 /* Сортировать по производителю. */
@@ -295,6 +300,14 @@ byManufacture(void *v1, void *v2)
 	   return strcmp(c1->Manufacture, c2->Manufacture) ;
 }
 
+int
+byManufactureRev(void *v1, void *v2)
+{
+    Computer *c1 = (Computer *)v1,
+    	*c2 = (Computer *)v2 ;
+	   return -strcmp(c1->Manufacture, c2->Manufacture) ;
+}
+
 /* Сортировать по типу ЦПУ. */
 int
 byCPUType(void *v1, void *v2)
@@ -304,6 +317,14 @@ byCPUType(void *v1, void *v2)
 	   return strcmp(c1->CPUType, c2->CPUType) ;
 }
 
+int
+byCPUTypeRev(void *v1, void *v2)
+{
+    Computer *c1 = (Computer *)v1,
+    	*c2 = (Computer *)v2 ;
+	   return -strcmp(c1->CPUType, c2->CPUType) ;
+}
+
 /* Сортировать по вместимости жёсткого диска. */
 int
 byHDDCapacity(void *v1, void *v2)
@@ -311,6 +332,14 @@ byHDDCapacity(void *v1, void *v2)
     Computer *c1 = (Computer *)v1,
     	*c2 = (Computer *)v2 ;
 	return c1->HDDCapacity > c2->HDDCapacity ? 1 : -1 ;
+}
+
+int
+byHDDCapacityRev(void *v1, void *v2)
+{
+    Computer *c1 = (Computer *)v1,
+    	*c2 = (Computer *)v2 ;
+	return c1->HDDCapacity < c2->HDDCapacity ? 1 : -1 ;
 }
 
 /* Вывести в терминал данные о компьютере.  */
@@ -394,13 +423,13 @@ f_add()
 }
 
 int
-readIndex(int i1, int i2)
+readIndex(char *prompt, int i1, int i2)
 {
 	int i;
 	char buf[512] = "0";
 	
 	do{
-		i = atoi(readString("Enter index: ", buf, sizeof(buf))) ;
+		i = atoi(readString(prompt, buf, sizeof(buf))) ;
 		if(i < i1 || i2 <= i){
 			puts("Wrong index");
 			continue;
@@ -413,7 +442,7 @@ readIndex(int i1, int i2)
 int
 f_remove()
 {
-	int i = readIndex(0, db->len);
+	int i = readIndex("> ", 0, db->len);
 	ll_remove(db, i);
 	return 0 ;
 }
@@ -421,7 +450,7 @@ f_remove()
 int
 f_change()
 {
-	int i = readIndex(0, db->len) ;
+	int i = readIndex("> ", 0, db->len) ;
 	readComputer(ll_at(db, i));
 	return 0 ;
 }
@@ -530,19 +559,14 @@ chomp(char *s, char c)
 }
 
 int 
-main(int argc, char *argv[])
+main(void)
 {
 	db = ll_create() ;
 	int in, ret;
 	char buf[512];
 	while(1){
 		printHndls();
-		readString("> ", buf, sizeof(buf));
-		in = atoi(buf) ;
-		if(in < 0 || in > LENGTH(handlers)){
-			puts("No such function");
-			continue;
-		}
+		in = readIndex("> ", 0, LENGTH(handlers)) ;
 		handlers[in].Hndl();
 	}
 }
